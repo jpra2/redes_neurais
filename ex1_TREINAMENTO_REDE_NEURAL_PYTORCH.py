@@ -30,10 +30,8 @@ def load_generic_loader(dataset, n, batch_size, random_seed):
     np.random.shuffle(indices)
     new_dataset_indices, other_indices = indices[0:n], indices[n:]
     new_dataset_sampler = SubsetRandomSampler(new_dataset_indices)
-    other_sample = SubsetRandomSampler(other_indices)
-    
     trainloader = DataLoader(dataset, batch_size=batch_size, sampler=new_dataset_sampler)
-    # other = DataLoader(dataset, batch_size=batch_size, sampler=other_sample)
+    
     return trainloader
 
 def load_trainloader(n, batch_size, random_seed=23):
@@ -56,7 +54,7 @@ def load_testloader(n, batch_size, random_seed=23):
     
     return load_generic_loader(dataset, n , batch_size, random_seed)
 
-def train(trainloader, testloader, epochs, batch_size_train, batch_size_test, n_train):
+def train(trainloader, testloader, epochs, n_train):
     print('\n')
     print(f'Results with n = {n_train} \n')
     
@@ -72,7 +70,7 @@ def train(trainloader, testloader, epochs, batch_size_train, batch_size_test, n_
     optimizer = optim.SGD(model.parameters(), lr=0.003)
     
     for e in range(epochs):
-        tst_corr = 0
+        
         running_loss = 0
         for images, labels in trainloader:
             images = images.view(images.shape[0], -1)
@@ -113,7 +111,7 @@ testloader = load_testloader(n=n_test, batch_size=batch_size_test)
 
 for n in n_train:
     trainloader = load_trainloader(n=n, batch_size=batch_size_train)
-    train(trainloader, testloader, epochs, batch_size_train, batch_size_test, n_train=n)
+    train(trainloader, testloader, epochs, n_train=n)
 
 
 

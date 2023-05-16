@@ -56,7 +56,9 @@ def load_testloader(n, batch_size, random_seed=23):
     
     return load_generic_loader(dataset, n , batch_size, random_seed)
 
-def train(trainloader, testloader, epochs, batch_size_train, batch_size_test):
+def train(trainloader, testloader, epochs, batch_size_train, batch_size_test, n_train):
+    print('\n')
+    print(f'Results with n = {n_train} \n')
     
     model = nn.Sequential(nn.Linear(784, 128),
                       nn.ReLU(),
@@ -68,9 +70,6 @@ def train(trainloader, testloader, epochs, batch_size_train, batch_size_test):
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.003)
-
-    test_losses = []
-    test_correct = []
     
     for e in range(epochs):
         tst_corr = 0
@@ -90,57 +89,31 @@ def train(trainloader, testloader, epochs, batch_size_train, batch_size_test):
             print(f"Training loss: {running_loss / len(trainloader)}")
             
         with torch.no_grad(): # don't calculate gradients during testting
-            for b, (x_test, y_test) in enumerate(testloader):
+            contador = 0
+            accuracy = 0
+            for (x_test, y_test) in testloader:
                 
-                y_val = model(x_test.view(batch_size_test, -1)) # flatten x_test
+                y_val = model(x_test.view(x_test.shape[0], -1)) # flatten x_test
                 
-                # tally the number of correct predictions
                 predicted = torch.max(y_val.data, 1)[1]
-                tst_corr += (predicted == y_test).sum()
-                
-                # update test loss & accuracy for the epoch
-                loss = criterion(y_val, y_test)
-                test_losses.append(loss)
-                test_correct.append(tst_corr.item()/len(y_test)/epochs)
+                tst_corr = (predicted == y_test).sum()
+                accuracy += tst_corr.item()/len(y_test)
+                contador += 1
+            accuracy = accuracy/contador
+            print(f'Accuracy: {accuracy:.3f}')
         
     
-    
-    
-    
-    
- 
-        
 batch_size_test = 20
 batch_size_train = 50
-n_train = 1000
+n_train = [1000, 2500, 5000]
 n_test = 500
 epochs = 5
 
-trainloader = load_trainloader(n=n_train, batch_size=batch_size_train)
 testloader = load_testloader(n=n_test, batch_size=batch_size_test)
-train(trainloader, testloader, epochs, batch_size_train, batch_size_test)
 
-import pdb; pdb.set_trace()
-
-    
-
-
-
-
-# images, labels = next(iter(trainloader))
-
-# img = images[0].view(1, 784)
-# label = labels[0]
-# with torch.no_grad():
-#     logps = model(img)
-
-
-# ps = torch.exp(logps)
-# plt.imshow(images[0].numpy().squeeze(), cmap='Greys_r')
-# plt.show()
-# print(ps)
-# print(label)
-#input()
+for n in n_train:
+    trainloader = load_trainloader(n=n, batch_size=batch_size_train)
+    train(trainloader, testloader, epochs, batch_size_train, batch_size_test, n_train=n)
 
 
 
